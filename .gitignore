@@ -15,6 +15,16 @@ npm-*
 /dist
 /.opt-in
 
+# Scratch portable
+/data
+/assets/*.svg
+/assets/*.wav
+/assets/*.png
+/public
+/distrib
+/admin/node_modules
+/server/node_modules
+
 # generated translation files
 /translations
 /locale
