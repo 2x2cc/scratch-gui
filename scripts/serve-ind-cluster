@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd "$(dirname "$0")"
+cd ..
+exec sudo node server/cluster.js `pwd`/
