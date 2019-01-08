@@ -507,7 +507,7 @@ class MenuBar extends React.Component {
                             classNames(
                                 styles.menuBarItem, 
                                 styles.hoverable,
-                                r{[styles.hidden]: this.props.isStandalone}
+                                {[styles.hidden]: this.props.isStandalone}
                                 )
                             }
                         onClick={this.props.onOpenTipLibrary}
