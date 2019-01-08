@@ -1,4 +1,7 @@
 import GoogleAnalytics from 'react-ga';
+import {defaultMock, analyticsProxy} from './fake-analytics';
+
+let analytics = analyticsProxy(GoogleAnalytics);
 
 GoogleAnalytics.initialize(process.env.GA_ID || window.GA_ID, {
     debug: (process.env.NODE_ENV !== 'production'),
@@ -7,4 +10,11 @@ GoogleAnalytics.initialize(process.env.GA_ID || window.GA_ID, {
     forceSSL: true
 });
 
-export default GoogleAnalytics;
+function disableAnalytics() {
+    analytics = analyticsProxy(defaultMock);
+}
+
+export {
+    analytics as default,
+    disableAnalytics,
+};
