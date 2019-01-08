@@ -1,4 +1,5 @@
 import classNames from 'classnames';
+import bindAll from 'lodash.bindall';
 import omit from 'lodash.omit';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -15,6 +16,8 @@ import CostumeTab from '../../containers/costume-tab.jsx';
 import TargetPane from '../../containers/target-pane.jsx';
 import SoundTab from '../../containers/sound-tab.jsx';
 import StageWrapper from '../../containers/stage-wrapper.jsx';
+import Signin from '../../containers/signin.jsx';
+import Progress from '../../containers/progress.jsx';
 import Loader from '../loader/loader.jsx';
 import Box from '../box/box.jsx';
 import MenuBar from '../menu-bar/menu-bar.jsx';
@@ -27,6 +30,7 @@ import PreviewModal from '../../containers/preview-modal.jsx';
 import ImportModal from '../../containers/import-modal.jsx';
 import WebGlModal from '../../containers/webgl-modal.jsx';
 import TipsLibrary from '../../containers/tips-library.jsx';
+import ProjectLibrary from '../../containers/project-library.jsx';
 import Cards from '../../containers/cards.jsx';
 import Alerts from '../../containers/alerts.jsx';
 import DragLayer from '../../containers/drag-layer.jsx';
@@ -41,6 +45,7 @@ import addExtensionIcon from './icon--extensions.svg';
 import codeIcon from './icon--code.svg';
 import costumesIcon from './icon--costumes.svg';
 import soundsIcon from './icon--sounds.svg';
+import {setStandalone} from '../../reducers/profile';
 
 const messages = defineMessages({
     addExtension: {
@@ -54,7 +59,16 @@ const messages = defineMessages({
 // Assume that it doesn't change for a session.
 let isRendererSupported = null;
 
-const GUIComponent = props => {
+class GUIComponent extends React.Component {
+    constructor (props) {
+        super(props);
+        bindAll(this, []);
+        if(this.props.isStandalone) {
+            this.props.onSetStandalone();
+        }
+    }
+
+    render () {
     const {
         accountNavOpen,
         activeTabIndex,
@@ -78,6 +92,7 @@ const GUIComponent = props => {
         children,
         connectionModalVisible,
         costumeLibraryVisible,
+	    signinDialogVisible,
         costumesTabVisible,
         enableCommunity,
         importInfoVisible,
@@ -86,6 +101,7 @@ const GUIComponent = props => {
         isPlayerOnly,
         isRtl,
         isShared,
+        isStandalone,
         loading,
         renderLogin,
         onClickAccountNav,
@@ -100,13 +116,17 @@ const GUIComponent = props => {
         onClickLogo,
         onExtensionButtonClick,
         onRequestCloseBackdropLibrary,
+        onRequestCloseSigninDialog,
+        onRequestSuccessSigninDialog,
         onRequestCloseCostumeLibrary,
+        onRequestCloseProgress,
         onRequestCloseTelemetryModal,
         onSeeCommunity,
         onShare,
         onTelemetryModalCancel,
         onTelemetryModalOptIn,
         onTelemetryModalOptOut,
+        onSetStandalone,
         previewInfoVisible,
         showComingSoon,
         soundsTabVisible,
@@ -114,13 +134,16 @@ const GUIComponent = props => {
         targetIsStage,
         telemetryModalVisible,
         tipsLibraryVisible,
+        projectLibraryVisible,
+        progressDialogVisible,
+        progressDescription,
+        progressError,
         vm,
         ...componentProps
-    } = omit(props, 'dispatch');
+    } = omit(this.props, 'dispatch');
     if (children) {
         return <Box {...componentProps}>{children}</Box>;
     }
-
     const tabClassNames = {
         tabs: styles.tabs,
         tab: classNames(tabStyles.reactTabsTab, styles.tab),
@@ -181,6 +204,14 @@ const GUIComponent = props => {
                 {tipsLibraryVisible ? (
                     <TipsLibrary />
                 ) : null}
+                {projectLibraryVisible ? (
+                    <ProjectLibrary />
+                ) : null}
+                {progressDialogVisible ? (
+                    <Progress progressDescription={progressDescription} progressError={progressError} 
+                     onRequestClose={onRequestCloseProgress}
+                    />
+                ) : null}
                 {cardsVisible ? (
                     <Cards />
                 ) : null}
@@ -198,6 +229,11 @@ const GUIComponent = props => {
                         onRequestClose={onRequestCloseCostumeLibrary}
                     />
                 ) : null}
+                {signinDialogVisible ? (
+                        <Signin
+                        onRequestClose={onRequestCloseSigninDialog}
+                        onRequestSuccess={onRequestSuccessSigninDialog}
+                    />): null}
                 {backdropLibraryVisible ? (
                     <BackdropLibrary
                         vm={vm}
@@ -218,6 +254,7 @@ const GUIComponent = props => {
                     className={styles.menuBarPosition}
                     enableCommunity={enableCommunity}
                     isShared={isShared}
+                    isStandalone={isStandalone}
                     renderLogin={renderLogin}
                     showComingSoon={showComingSoon}
                     onClickAccountNav={onClickAccountNav}
@@ -351,7 +388,8 @@ const GUIComponent = props => {
             </Box>
         );
     }}</MediaQuery>);
-};
+    }
+}
 
 GUIComponent.propTypes = {
     accountNavOpen: PropTypes.bool,
@@ -382,6 +420,7 @@ GUIComponent.propTypes = {
     isPlayerOnly: PropTypes.bool,
     isRtl: PropTypes.bool,
     isShared: PropTypes.bool,
+    isStandalone: PropTypes.bool,
     loading: PropTypes.bool,
     onActivateCostumesTab: PropTypes.func,
     onActivateSoundsTab: PropTypes.func,
@@ -394,6 +433,9 @@ GUIComponent.propTypes = {
     onOpenRegistration: PropTypes.func,
     onRequestCloseBackdropLibrary: PropTypes.func,
     onRequestCloseCostumeLibrary: PropTypes.func,
+    onRequestCloseSigninDialog: PropTypes.func,
+    onRequestSuccessSigninDialog: PropTypes.func,
+    onRequestCloseProgress: PropTypes.func,
     onRequestCloseTelemetryModal: PropTypes.func,
     onSeeCommunity: PropTypes.func,
     onShare: PropTypes.func,
@@ -403,6 +445,7 @@ GUIComponent.propTypes = {
     onTelemetryModalOptOut: PropTypes.func,
     onToggleLoginOpen: PropTypes.func,
     onUpdateProjectTitle: PropTypes.func,
+    onSetStandalone: PropTypes.func, 
     previewInfoVisible: PropTypes.bool,
     renderLogin: PropTypes.func,
     showComingSoon: PropTypes.bool,
@@ -411,6 +454,10 @@ GUIComponent.propTypes = {
     targetIsStage: PropTypes.bool,
     telemetryModalVisible: PropTypes.bool,
     tipsLibraryVisible: PropTypes.bool,
+    projectLibraryVisible: PropTypes.bool,
+    progressDialogVisible: PropTypes.bool,
+    progressDescription: PropTypes.string,
+    progressError: PropTypes.string,
     vm: PropTypes.instanceOf(VM).isRequired
 };
 GUIComponent.defaultProps = {
@@ -427,6 +474,7 @@ GUIComponent.defaultProps = {
     enableCommunity: false,
     isCreating: false,
     isShared: false,
+    isStandalone: false,
     loading: false,
     onUpdateProjectTitle: () => {},
     showComingSoon: false,
@@ -438,6 +486,10 @@ const mapStateToProps = state => ({
     stageSizeMode: state.scratchGui.stageSize.stageSize
 });
 
+const mapDispatchToProps = dispatch => ({
+    onSetStandalone: () => dispatch(setStandalone())
+});
+
 export default injectIntl(connect(
-    mapStateToProps
+    mapStateToProps, mapDispatchToProps
 )(GUIComponent));

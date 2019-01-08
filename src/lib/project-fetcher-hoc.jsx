@@ -35,8 +35,14 @@ const ProjectFetcherHOC = function (WrappedComponent) {
             bindAll(this, [
                 'fetchProject'
             ]);
-            storage.setProjectHost(props.projectHost);
-            storage.setAssetHost(props.assetHost);
+            if (this.props.isStandalone) {
+                storage.setStandalone();                
+                storage.setProjectHost('');
+                storage.setAssetHost('');
+            } else {
+                storage.setProjectHost(props.projectHost);
+                storage.setAssetHost(props.assetHost);
+            }
             storage.setTranslatorFunction(props.intl.formatMessage);
             // props.projectId might be unset, in which case we use our default;
             // or it may be set by an even higher HOC, and passed to us.
@@ -117,6 +123,7 @@ const ProjectFetcherHOC = function (WrappedComponent) {
         intl: intlShape.isRequired,
         isFetchingWithId: PropTypes.bool,
         isLoadingProject: PropTypes.bool,
+        isStandalone: PropTypes.bool,
         loadingState: PropTypes.oneOf(LoadingStates),
         onActivateTab: PropTypes.func,
         onError: PropTypes.func,
@@ -137,6 +144,7 @@ const ProjectFetcherHOC = function (WrappedComponent) {
         isLoadingProject: getIsLoading(state.scratchGui.projectState.loadingState),
         isShowingProject: getIsShowingProject(state.scratchGui.projectState.loadingState),
         loadingState: state.scratchGui.projectState.loadingState,
+        isStandalone: state.scratchGui.isStandalone,
         reduxProjectId: state.scratchGui.projectState.projectId
     });
     const mapDispatchToProps = dispatch => ({

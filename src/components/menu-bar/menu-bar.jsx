@@ -25,6 +25,9 @@ import SB3Downloader from '../../containers/sb3-downloader.jsx';
 import DeletionRestorer from '../../containers/deletion-restorer.jsx';
 import TurboMode from '../../containers/turbo-mode.jsx';
 
+import ProjectWebLoader from '../../containers/project-web-loader.jsx';
+import ProjectWebSaver from '../../containers/project-web-saver.jsx';
+
 import {openTipsLibrary} from '../../reducers/modals';
 import {setPlayer} from '../../reducers/mode';
 import {
@@ -53,6 +56,11 @@ import {
     closeLoginMenu,
     loginMenuOpen
 } from '../../reducers/menus';
+
+import {
+    openSigninDialog,
+    closeSigninDialog,
+} from '../../reducers/modals';
 
 import styles from './menu-bar.css';
 
@@ -355,6 +363,42 @@ class MenuBar extends React.Component {
                                         {newProjectMessage}
                                     </MenuItem>
                                 </MenuSection>
+                                {this.props.isStandalone ? (
+                                <MenuSection>
+                                    <ProjectWebLoader>
+                                    </ProjectWebLoader>
+                                    <ProjectWebSaver
+                                        id="save"
+                                        isRtl={this.props.isRtl}
+                                        useNewProjectId={false}
+                                    >{(saveProject, saveProps) => (
+                                    <MenuItem onClick={saveProject}
+                                        {...saveProps}
+                                    >
+                                        <FormattedMessage
+                                            defaultMessage="Save now"
+                                            description="Menu bar item for saving now"
+                                            id="gui.menuBar.saveNow"
+                                        />
+                                    </MenuItem>
+                                    )}</ProjectWebSaver>
+                                    <ProjectWebSaver
+                                        id="copy"
+                                        isRtl={this.props.isRtl}
+                                        useNewProjectId={true}
+                                    >{(saveProject, saveProps) => (
+                                        <MenuItem
+                                            onClick={saveProject}
+                                            {...saveProps}
+                                        >
+                                            <FormattedMessage
+                                            defaultMessage="Save as a copy"
+                                            description="Menu bar item for saving as a copy"
+                                            id="gui.menuBar.saveAsCopy"
+                                        />
+                                        </MenuItem>
+                                    )}</ProjectWebSaver>
+                                </MenuSection>) : []}
                                 {(this.props.canSave || this.props.canCreateCopy || this.props.canRemix) && (
                                     <MenuSection>
                                         {this.props.canSave ? (
@@ -459,7 +503,13 @@ class MenuBar extends React.Component {
                     <Divider className={classNames(styles.divider)} />
                     <div
                         aria-label={this.props.intl.formatMessage(ariaMessages.tutorials)}
-                        className={classNames(styles.menuBarItem, styles.hoverable)}
+                        className={
+                            classNames(
+                                styles.menuBarItem, 
+                                styles.hoverable,
+                                r{[styles.hidden]: this.props.isStandalone}
+                                )
+                            }
                         onClick={this.props.onOpenTipLibrary}
                     >
                         <img
@@ -552,7 +602,7 @@ class MenuBar extends React.Component {
                             <SaveStatus />
                         )}
                     </div>
-                    {this.props.sessionExists ? (
+                    {(this.props.sessionExists||this.props.isStandalone) ? (
                         this.props.username ? (
                             // ************ user is logged in ************
                             <React.Fragment>
@@ -561,7 +611,8 @@ class MenuBar extends React.Component {
                                         className={classNames(
                                             styles.menuBarItem,
                                             styles.hoverable,
-                                            styles.mystuffButton
+                                            styles.mystuffButton,
+                                            {[styles.hidden]: this.props.isStandalone}
                                         )}
                                     >
                                         <img
@@ -570,6 +621,17 @@ class MenuBar extends React.Component {
                                         />
                                     </div>
                                 </a>
+                                {this.props.isStandalone ? (
+                                    <div 
+                                        className={classNames(
+                                            styles.menuBarItem,
+                                            styles.hoverable,
+                                        )}
+                                        onMouseUp={this.props.onSignin}
+                                    >
+                                        {this.props.username}
+                                    </div>
+                                ) : (
                                 <AccountNav
                                     className={classNames(
                                         styles.menuBarItem,
@@ -582,7 +644,7 @@ class MenuBar extends React.Component {
                                     onClick={this.props.onClickAccount}
                                     onClose={this.props.onRequestCloseAccount}
                                     onLogOut={this.props.onLogOut}
-                                />
+                                />)}
                             </React.Fragment>
                         ) : (
                             // ********* user not logged in, but a session exists
@@ -591,7 +653,8 @@ class MenuBar extends React.Component {
                                 <div
                                     className={classNames(
                                         styles.menuBarItem,
-                                        styles.hoverable
+                                        styles.hoverable,
+                                        {[styles.hidden]: this.props.isStandalone}
                                     )}
                                     key="join"
                                     onMouseUp={this.props.onOpenRegistration}
@@ -608,7 +671,8 @@ class MenuBar extends React.Component {
                                         styles.hoverable
                                     )}
                                     key="login"
-                                    onMouseUp={this.props.onClickLogin}
+                                    onMouseUp={this.props.isStandalone ? 
+                                      this.props.onSignin : this.props.onClickLogin}
                                 >
                                     <FormattedMessage
                                         defaultMessage="Sign in"
@@ -717,6 +781,7 @@ MenuBar.propTypes = {
     isRtl: PropTypes.bool,
     isShared: PropTypes.bool,
     isShowingProject: PropTypes.bool,
+    isStandalone: PropTypes.bool,
     isUpdating: PropTypes.bool,
     languageMenuOpen: PropTypes.bool,
     loginMenuOpen: PropTypes.bool,
@@ -756,7 +821,10 @@ MenuBar.defaultProps = {
 
 const mapStateToProps = state => {
     const loadingState = state.scratchGui.projectState.loadingState;
-    const user = state.session && state.session.session && state.session.session.user;
+    let user = state.session && state.session.session && state.session.session.user;
+    if (!user && typeof state.scratchGui.profile.username !== 'undefined') {
+        user = { username: state.scratchGui.profile.username };
+    }
     return {
         accountMenuOpen: accountMenuOpen(state),
         fileMenuOpen: fileMenuOpen(state),
@@ -785,6 +853,7 @@ const mapDispatchToProps = dispatch => ({
     onClickLanguage: () => dispatch(openLanguageMenu()),
     onRequestCloseLanguage: () => dispatch(closeLanguageMenu()),
     onClickLogin: () => dispatch(openLoginMenu()),
+    onSignin: () => dispatch(openSigninDialog()),
     onRequestCloseLogin: () => dispatch(closeLoginMenu()),
     onClickNew: needSave => dispatch(requestNewProject(needSave)),
     onClickRemix: () => dispatch(remixProject()),

@@ -13,7 +13,11 @@ const MODAL_SOUND_LIBRARY = 'soundLibrary';
 const MODAL_SPRITE_LIBRARY = 'spriteLibrary';
 const MODAL_SOUND_RECORDER = 'soundRecorder';
 const MODAL_CONNECTION = 'connectionModal';
+const MODAL_PROGRESS = 'progress';
 const MODAL_TIPS_LIBRARY = 'tipsLibrary';
+
+const MODAL_PROJECT_LIBRARY = 'projectLibrary';
+const MODAL_SIGNIN = 'signinDialog';
 
 const initialState = {
     [MODAL_BACKDROP_LIBRARY]: false,
@@ -28,7 +32,10 @@ const initialState = {
     [MODAL_SPRITE_LIBRARY]: false,
     [MODAL_SOUND_RECORDER]: false,
     [MODAL_CONNECTION]: false,
-    [MODAL_TIPS_LIBRARY]: false
+    [MODAL_TIPS_LIBRARY]: false,
+    [MODAL_PROJECT_LIBRARY]: false,
+    [MODAL_SIGNIN]: false,
+    [MODAL_PROGRESS]: false,
 };
 
 const reducer = function (state, action) {
@@ -57,6 +64,12 @@ const closeModal = function (modal) {
         type: CLOSE_MODAL,
         modal: modal
     };
+};
+const openSigninDialog = function () {
+  return openModal(MODAL_SIGNIN);
+};
+const openProgressDialog = function () {
+  return openModal(MODAL_PROGRESS);
 };
 const openBackdropLibrary = function () {
     return openModal(MODAL_BACKDROP_LIBRARY);
@@ -97,6 +110,15 @@ const openConnectionModal = function () {
 const openTipsLibrary = function () {
     return openModal(MODAL_TIPS_LIBRARY);
 };
+const openProjectLibrary = function () {
+    return openModal(MODAL_PROJECT_LIBRARY);
+};
+const closeSigninDialog = function () {
+  return closeModal(MODAL_SIGNIN);
+};
+const closeProgressDialog = function () {
+  return closeModal(MODAL_PROGRESS);
+};
 const closeBackdropLibrary = function () {
     return closeModal(MODAL_BACKDROP_LIBRARY);
 };
@@ -136,6 +158,9 @@ const closeTipsLibrary = function () {
 const closeConnectionModal = function () {
     return closeModal(MODAL_CONNECTION);
 };
+const closeProjectLibrary = function () {
+    return closeModal(MODAL_PROJECT_LIBRARY);
+};
 export {
     reducer as default,
     initialState as modalsInitialState,
@@ -146,12 +171,15 @@ export {
     openImportInfo,
     openLoadingProject,
     openPreviewInfo,
+    openSigninDialog,
     openSoundLibrary,
     openSpriteLibrary,
     openSoundRecorder,
     openTelemetryModal,
     openTipsLibrary,
     openConnectionModal,
+    openProjectLibrary,
+    openProgressDialog,
     closeBackdropLibrary,
     closeCameraCapture,
     closeCostumeLibrary,
@@ -159,10 +187,13 @@ export {
     closeImportInfo,
     closeLoadingProject,
     closePreviewInfo,
+    closeSigninDialog,
     closeSpriteLibrary,
     closeSoundLibrary,
     closeSoundRecorder,
     closeTelemetryModal,
     closeTipsLibrary,
-    closeConnectionModal
+    closeConnectionModal,
+    closeProjectLibrary,
+    closeProgressDialog,
 };

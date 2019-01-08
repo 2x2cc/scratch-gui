@@ -22,9 +22,13 @@ import {
 import {
     closeCostumeLibrary,
     closeBackdropLibrary,
+    closeSigninDialog,
+    closeProgressDialog,
     closeTelemetryModal,
     openExtensionLibrary
 } from '../reducers/modals';
+
+import { setUsername } from '../reducers/profile';
 
 import FontLoaderHOC from '../lib/font-loader-hoc.jsx';
 import LocalizationHOC from '../lib/localization-hoc.jsx';
@@ -159,6 +163,12 @@ const mapStateToProps = state => {
         loadingStateVisible: state.scratchGui.modals.loadingProject,
         previewInfoVisible: state.scratchGui.modals.previewInfo,
         projectId: state.scratchGui.projectState.projectId,
+        projectLibraryVisible: state.scratchGui.modals.projectLibrary,
+        progressDialogVisible: state.scratchGui.modals.progress,
+        progressDescription: state.scratchGui.profile.progressDescription,
+        progressError: state.scratchGui.profile.progressError,
+
+        signinDialogVisible: state.scratchGui.modals.signinDialog,
         soundsTabVisible: state.scratchGui.editorTab.activeTabIndex === SOUNDS_TAB_INDEX,
         targetIsStage: (
             state.scratchGui.targets.stage &&
@@ -177,6 +187,12 @@ const mapDispatchToProps = dispatch => ({
     onActivateSoundsTab: () => dispatch(activateTab(SOUNDS_TAB_INDEX)),
     onRequestCloseBackdropLibrary: () => dispatch(closeBackdropLibrary()),
     onRequestCloseCostumeLibrary: () => dispatch(closeCostumeLibrary()),
+    onRequestCloseProgress: () => dispatch(closeProgressDialog()),
+    onRequestCloseSigninDialog: () => dispatch(closeSigninDialog()),
+    onRequestSuccessSigninDialog: (username) => {
+        dispatch(closeSigninDialog());
+        dispatch(setUsername(username));
+    },
     onRequestCloseTelemetryModal: () => dispatch(closeTelemetryModal()),
     onUpdateReduxProjectTitle: title => dispatch(setProjectTitle(title))
 });

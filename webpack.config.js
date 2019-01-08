@@ -6,6 +6,7 @@ var webpack = require('webpack');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+var TerserPlugin = require('terser-webpack-plugin');
 
 // PostCss
 var autoprefixer = require('autoprefixer');
@@ -83,11 +84,8 @@ const base = {
         }]
     },
     optimization: {
-        minimizer: [
-            new UglifyJsPlugin({
-                include: /\.min\.js$/
-            })
-        ]
+        minimizer: 
+	    [new TerserPlugin({ include: /\.min\.js$/ })]
     },
     plugins: []
 };
@@ -100,7 +98,8 @@ module.exports = [
             'gui': './src/playground/index.jsx',
             'blocksonly': './src/playground/blocks-only.jsx',
             'compatibilitytesting': './src/playground/compatibility-testing.jsx',
-            'player': './src/playground/player.jsx'
+            'player': './src/playground/player.jsx',
+            'portable': './src/playground/portable.jsx',
         },
         output: {
             path: path.resolve(__dirname, 'build'),
@@ -140,6 +139,13 @@ module.exports = [
                 chunks: ['lib.min', 'gui'],
                 template: 'src/playground/index.ejs',
                 title: 'Scratch 3.0 GUI',
+                sentryConfig: process.env.SENTRY_CONFIG ? '"' + process.env.SENTRY_CONFIG + '"' : null
+            }),
+            new HtmlWebpackPlugin({
+                chunks: ['lib.min', 'portable'],
+                template: 'src/playground/index.ejs',
+                title: 'Scratch 3.0 Portable',
+                filename: 'portable.html',
                 sentryConfig: process.env.SENTRY_CONFIG ? '"' + process.env.SENTRY_CONFIG + '"' : null
             }),
             new HtmlWebpackPlugin({

@@ -10,6 +10,7 @@ class Storage extends ScratchStorage {
     constructor () {
         super();
         this.cacheDefaultProject();
+        this.isStandalone = false;
     }
     addOfficialScratchWebStores () {
         this.addWebStore(
@@ -31,6 +32,9 @@ class Storage extends ScratchStorage {
             [this.AssetType.Sound],
             asset => `static/extension-assets/scratch3_music/${asset.assetId}.${asset.dataFormat}`
         );
+    }
+    setStandalone() {
+        this.isStandalone = true;
     }
     setProjectHost (projectHost) {
         this.projectHost = projectHost;

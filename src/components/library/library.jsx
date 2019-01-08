@@ -13,6 +13,8 @@ import analytics from '../../lib/analytics';
 
 import styles from './library.css';
 
+import {connect} from 'react-redux';
+
 const messages = defineMessages({
     filterPlaceholder: {
         id: 'gui.library.filterPlaceholder',
@@ -121,6 +123,37 @@ class LibraryComponent extends React.Component {
     setFilteredDataRef (ref) {
         this.filteredDataRef = ref;
     }
+    getFilteredItems() {
+        const host = this.props.isStandalone ? '' : 
+          'https://cdn.assets.scratch.mit.edu';
+        return this.getFilteredData().map((dataItem, index) => {
+                        const scratchURL =  dataItem.md5 ?
+                            `${host}/internalapi/asset/${dataItem.md5}/get/` :
+                            dataItem.rawURL;
+                        return (
+                            <LibraryItem
+                                bluetoothRequired={dataItem.bluetoothRequired}
+                                collaborator={dataItem.collaborator}
+                                description={dataItem.description}
+                                disabled={dataItem.disabled}
+                                extensionId={dataItem.extensionId}
+                                featured={dataItem.featured}
+                                hidden={dataItem.hidden}
+                                iconURL={scratchURL}
+                                id={index}
+                                insetIconURL={dataItem.insetIconURL}
+                                internetConnectionRequired={dataItem.internetConnectionRequired}
+                                key={`item_${index}`}
+                                name={dataItem.name}
+                                onBlur={this.handleBlur}
+                                onFocus={this.handleFocus}
+                                onMouseEnter={this.handleMouseEnter}
+                                onMouseLeave={this.handleMouseLeave}
+                                onSelect={this.handleSelect}
+                            />
+                        );
+                    })        
+    }
     render () {
         return (
             <Modal
@@ -172,33 +205,7 @@ class LibraryComponent extends React.Component {
                     })}
                     ref={this.setFilteredDataRef}
                 >
-                    {this.getFilteredData().map((dataItem, index) => {
-                        const scratchURL = dataItem.md5 ?
-                            `https://cdn.assets.scratch.mit.edu/internalapi/asset/${dataItem.md5}/get/` :
-                            dataItem.rawURL;
-                        return (
-                            <LibraryItem
-                                bluetoothRequired={dataItem.bluetoothRequired}
-                                collaborator={dataItem.collaborator}
-                                description={dataItem.description}
-                                disabled={dataItem.disabled}
-                                extensionId={dataItem.extensionId}
-                                featured={dataItem.featured}
-                                hidden={dataItem.hidden}
-                                iconURL={scratchURL}
-                                id={index}
-                                insetIconURL={dataItem.insetIconURL}
-                                internetConnectionRequired={dataItem.internetConnectionRequired}
-                                key={`item_${index}`}
-                                name={dataItem.name}
-                                onBlur={this.handleBlur}
-                                onFocus={this.handleFocus}
-                                onMouseEnter={this.handleMouseEnter}
-                                onMouseLeave={this.handleMouseLeave}
-                                onSelect={this.handleSelect}
-                            />
-                        );
-                    })}
+                    {this.getFilteredItems()}
                 </div>
             </Modal>
         );
@@ -223,6 +230,7 @@ LibraryComponent.propTypes = {
     filterable: PropTypes.bool,
     id: PropTypes.string.isRequired,
     intl: intlShape.isRequired,
+    isStandalone: PropTypes.bool,
     onItemMouseEnter: PropTypes.func,
     onItemMouseLeave: PropTypes.func,
     onItemSelected: PropTypes.func,
@@ -235,4 +243,12 @@ LibraryComponent.defaultProps = {
     filterable: true
 };
 
-export default injectIntl(LibraryComponent);
+const mapStateToProps = state => ({
+    isStandalone: state.scratchGui.profile.isStandalone
+});
+
+const mapDispatchToProps = () => ({});
+
+export default injectIntl(connect(
+    mapStateToProps, mapDispatchToProps
+)(LibraryComponent));

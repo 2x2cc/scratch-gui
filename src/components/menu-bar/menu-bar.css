@@ -218,3 +218,7 @@
 .mystuff > a {
   background-image: url("/images/mystuff.png");
 }
+
+.hidden {
+    display: none;
+}
