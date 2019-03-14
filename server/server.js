@@ -302,7 +302,7 @@ app.post('/api/load',
 app.get('/api/template/:id',
     function (req, res, done) {
         const id = req.params.id;
-        const path = id + "/index.sb2";
+        const path = id + "/index.sb3";
         res.contentType("application/zip");
         let nameContent = fs.readFileSync(projectsPath + id + '/name.txt', 'utf8');
         res.header('project-title', nameContent.replace('\r', '').replace('\n', ''));
